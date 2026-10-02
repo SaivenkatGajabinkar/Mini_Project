@@ -1,0 +1,52 @@
+CYBER ATTACK DETECTION - Classification Report
+Date: 2026-10-02T16:05:28.126407
+Dataset: Full dataset
+Dataset files: Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv, demo_training_data.csv
+Train/Test Split: 80/20 stratified, seed=42
+
+              precision    recall  f1-score   support
+
+      Normal       1.00      1.00      1.00     18382
+      Attack       1.00      1.00      1.00     25603
+
+    accuracy                           1.00     43985
+   macro avg       1.00      1.00      1.00     43985
+weighted avg       1.00      1.00      1.00     43985
+
+Confusion Matrix:
+  TN=18,381  FP=1
+  FN=9  TP=25,594
+
+ROC-AUC: 1.0000
+
+Attack Recall: 0.9996
+  Attacks detected: 25,594 / 25,603
+  Attacks missed:   9
+
+Data Split:
+  Train: 175,940 (Normal=73,530, Attack=102,410)
+  Test:  43,985 (Normal=18,382, Attack=25,603)
+
+Feature Importances:
+  Fwd Packet Length Max: 0.1361
+  Init_Win_bytes_forward: 0.1191
+  Total Length of Fwd Packets: 0.1167
+  Bwd Packet Length Mean: 0.1077
+  Fwd Packet Length Mean: 0.0891
+  Total Fwd Packets: 0.0815
+  Bwd Packet Length Max: 0.0689
+  Total Length of Bwd Packets: 0.0655
+  Average Packet Size: 0.0509
+  Fwd IAT Mean: 0.0506
+  Total Backward Packets: 0.0274
+  Flow IAT Std: 0.0230
+  Bwd IAT Mean: 0.0210
+  Flow Duration: 0.0103
+  Flow Bytes/s: 0.0092
+  Flow Packets/s: 0.0091
+  Flow IAT Max: 0.0072
+  ACK Flag Count: 0.0031
+  Flow IAT Mean: 0.0029
+  PSH Flag Count: 0.0007
+  SYN Flag Count: 0.0000
+  RST Flag Count: 0.0000

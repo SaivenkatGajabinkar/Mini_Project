@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CyberShield — Detect network threats using Machine Learning on Wireshark captures. SOC-style dashboard with real-time risk analysis.">
+    <title>CyberShield — Network Attack Detection</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+    <!-- Mobile Sidebar Toggle -->
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle sidebar">☰</button>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Analyzing Network Capture...</div>
+            <div class="loading-subtext">Extracting flows · Running ML predictions · Computing risk score</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+
+        <!-- ═══════ SIDEBAR ═══════ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">🛡️</div>
+                    <div class="logo-text">
+                        CyberShield
+                        <span>Threat Detection</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Monitoring</div>
+                    <div class="nav-item active" data-page="overview" id="nav-overview">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </div>
+                    <div class="nav-item" data-page="upload" id="nav-upload">
+                        <span class="nav-icon">🔬</span> Analyze Capture
+                    </div>
+                    <div class="nav-item" data-page="result" id="nav-result" style="display:none;">
+                        <span class="nav-icon">📋</span> Analysis Result
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Intelligence</div>
+                    <div class="nav-item" data-page="history" id="nav-history">
+                        <span class="nav-icon">🗂️</span> Capture History
+                    </div>
+                    <div class="nav-item" data-page="blocked" id="nav-blocked">
+                        <span class="nav-icon">🚫</span> Blocked IPs
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="systemStatusText">Connecting...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══════ MAIN CONTENT ═══════ -->
+        <main class="main-content">
+
+            <!-- Top Header Bar -->
+            <div class="top-header">
+                <div class="header-title">
+                    <h2>Cyber Attack Detection</h2>
+                    <span class="header-subtitle">Network Threat Detection & Risk Analysis</span>
+                </div>
+                <div class="header-status" id="headerStatus">
+                    <span class="hdr-dot"></span>
+                    <span id="headerStatusText">System Operational</span>
+                </div>
+            </div>
+
+            <div class="page-container">
+
+                <!-- ════════════════ OVERVIEW PAGE ════════════════ -->
+                <section class="page-section active" id="page-overview">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard Overview</h1>
+                        <p class="page-subtitle">Real-time summary of network traffic analysis</p>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card blue">
+                            <div class="stat-icon-wrap blue">📁</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Total Captures</div>
+                                <div class="stat-value" id="stat-total-captures">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card red">
+                            <div class="stat-icon-wrap red">⚠️</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Attack Detections</div>
+                                <div class="stat-value" id="stat-attack-captures">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-icon-wrap green">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-label">Normal Captures</div>
+                                <div class="stat-value" id="stat-normal-captures">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="stat-icon-wrap purple">🚫</div>
+                            <div class="stat-info">
+                                <div class="stat-label">IPs Blocked</div>
+                                <div class="stat-value" id="stat-blocked-ips">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Latest Analysis -->
+                    <div class="card mb-lg" id="latestResultCard" style="display:none;">
+                        <div class="card-header">
+                            <div class="card-title"><span class="card-icon">🔬</span> Latest Analysis</div>
+                            <button class="btn btn-ghost btn-sm" id="viewLatestBtn">View Details →</button>
+                        </div>
+                        <div id="latestResultContent"></div>
+                    </div>
+
+                    <!-- Model Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><span class="card-icon">🤖</span> Model Information</div>
+                        </div>
+                        <div id="modelInfo">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">⏳</div>
+                                <div class="empty-state-text">Loading model info...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════ UPLOAD PAGE ════════════════ -->
+                <section class="page-section" id="page-upload">
+                    <div class="page-header">
+                        <h1 class="page-title">Analyze Capture</h1>
+                        <p class="page-subtitle">Upload a Wireshark capture file (.pcapng or .pcap) for ML-powered analysis</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon-wrap">📤</div>
+                            <div class="upload-text">Drop your capture file here or click to browse</div>
+                            <div class="upload-hint">Accepts .pcapng and .pcap files up to 50 MB</div>
+                            <input type="file" class="upload-input" id="fileInput" accept=".pcapng,.pcap">
+                        </div>
+
+                        <div id="selectedFileInfo" class="hidden">
+                            <div class="file-selected-bar">
+                                <div class="file-info">
+                                    <span class="file-icon">📄</span>
+                                    <div>
+                                        <div class="file-name" id="selectedFileName"></div>
+                                        <div class="file-size" id="selectedFileSize"></div>
+                                    </div>
+                                </div>
+                                <div class="file-actions">
+                                    <button class="btn btn-ghost btn-sm" id="clearFileBtn">✕ Clear</button>
+                                    <button class="btn btn-primary" id="analyzeBtn">🔍 Analyze Capture</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-lg">
+                        <div class="card-header">
+                            <div class="card-title"><span class="card-icon">ℹ️</span> How It Works</div>
+                        </div>
+                        <div class="pipeline-steps">
+                            <div class="pipeline-step">
+                                <span class="step-num">01</span>
+                                <div class="step-icon">📤</div>
+                                <div class="step-title">Upload</div>
+                                <div class="step-desc">Upload a Wireshark .pcapng capture file</div>
+                            </div>
+                            <div class="pipeline-step">
+                                <span class="step-num">02</span>
+                                <div class="step-icon">🔬</div>
+                                <div class="step-title">Extract</div>
+                                <div class="step-desc">Packets grouped into flows with 22 features</div>
+                            </div>
+                            <div class="pipeline-step">
+                                <span class="step-num">03</span>
+                                <div class="step-icon">🤖</div>
+                                <div class="step-title">Predict</div>
+                                <div class="step-desc">Random Forest classifies each flow</div>
+                            </div>
+                            <div class="pipeline-step">
+                                <span class="step-num">04</span>
+                                <div class="step-icon">📊</div>
+                                <div class="step-title">Report</div>
+                                <div class="step-desc">Risk score, suspicious IPs & detailed analysis</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════ RESULT PAGE ════════════════ -->
+                <section class="page-section" id="page-result">
+                    <div class="page-header">
+                        <div class="flex items-center justify-between flex-wrap gap-md">
+                            <div>
+                                <h1 class="page-title">Analysis Result</h1>
+                                <p class="page-subtitle" id="resultFilename"></p>
+                            </div>
+                            <div class="flex gap-md">
+                                <a class="btn btn-ghost btn-sm" id="downloadReportBtn" target="_blank">📄 Download Report</a>
+                                <button class="btn btn-ghost btn-sm" onclick="navigateTo('upload')">📤 New Analysis</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Header Bar -->
+                    <div class="result-header-bar">
+                        <div class="result-meta">
+                            <span class="result-status-badge" id="resultStatusBadge"></span>
+                            <div class="result-meta-item">
+                                <span class="result-meta-label">Capture ID</span>
+                                <span class="result-meta-value" id="resultCaptureId"></span>
+                            </div>
+                            <div class="result-meta-item">
+                                <span class="result-meta-label">Analyzed At</span>
+                                <span class="result-meta-value" id="resultAnalyzedAt"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-grid">
+                        <!-- Sidebar with Risk Meter -->
+                        <div class="result-sidebar">
+                            <div class="card">
+                                <div class="card-title mb-lg" style="justify-content: center;">Risk Assessment</div>
+                                <div class="risk-meter">
+                                    <svg class="risk-meter-circle" viewBox="0 0 200 200">
+                                        <circle class="risk-meter-bg" cx="100" cy="100" r="85"/>
+                                        <circle class="risk-meter-fill" id="riskMeterFill" cx="100" cy="100" r="85"
+                                                stroke-dasharray="534" stroke-dashoffset="534"/>
+                                    </svg>
+                                    <div class="risk-meter-center">
+                                        <div class="risk-meter-value" id="riskScoreValue">0</div>
+                                        <div class="risk-meter-label" id="riskLevelLabel">—</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title mb-md">Flow Summary</div>
+                                <div class="flow-summary-row">
+                                    <span class="flow-summary-label">Total Flows</span>
+                                    <span class="flow-summary-val text-cyan" id="resultTotalFlows">0</span>
+                                </div>
+                                <div class="flow-summary-row">
+                                    <span class="flow-summary-label">Attack Flows</span>
+                                    <span class="flow-summary-val text-red" id="resultAttackFlows">0</span>
+                                </div>
+                                <div class="flow-summary-row">
+                                    <span class="flow-summary-label">Normal Flows</span>
+                                    <span class="flow-summary-val text-green" id="resultNormalFlows">0</span>
+                                </div>
+                                <div class="flow-summary-row">
+                                    <span class="flow-summary-label">Attack Ratio</span>
+                                    <span class="flow-summary-val" id="resultAttackRatio">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Result Area -->
+                        <div class="result-main">
+                            <!-- Protocol Breakdown -->
+                            <div class="card">
+                                <div class="card-title mb-lg"><span class="card-icon">📶</span> Protocol Breakdown</div>
+                                <div class="bar-chart" id="protocolChart"></div>
+                            </div>
+
+                            <!-- Suspicious IPs -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title"><span class="card-icon">🔴</span> Suspicious IP Addresses</div>
+                                </div>
+                                <div id="suspiciousIpsContent">
+                                    <div class="empty-state">
+                                        <div class="empty-state-text">No suspicious IPs detected</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Top Suspicious Flows -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title"><span class="card-icon">⚡</span> Top Suspicious Flows</div>
+                                </div>
+                                <div style="overflow-x: auto;">
+                                    <table class="data-table" id="suspiciousFlowsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Source IP</th>
+                                                <th>Dest IP</th>
+                                                <th>Src Port</th>
+                                                <th>Dst Port</th>
+                                                <th>Protocol</th>
+                                                <th>Attack Prob.</th>
+                                                <th>Label</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="suspiciousFlowsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════ HISTORY PAGE ════════════════ -->
+                <section class="page-section" id="page-history">
+                    <div class="page-header">
+                        <h1 class="page-title">Capture History</h1>
+                        <p class="page-subtitle">All previous network capture analyses</p>
+                    </div>
+
+                    <div class="card">
+                        <div style="overflow-x: auto;">
+                            <table class="data-table" id="historyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>File</th>
+                                        <th>Status</th>
+                                        <th>Risk</th>
+                                        <th>Score</th>
+                                        <th>Flows</th>
+                                        <th>Attacks</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="historyEmpty" class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-text">No captures analyzed yet</div>
+                            <div class="empty-state-hint">Upload a .pcapng file to get started</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════ BLOCKED IPS PAGE ════════════════ -->
+                <section class="page-section" id="page-blocked">
+                    <div class="page-header">
+                        <h1 class="page-title">Blocked IP Addresses</h1>
+                        <p class="page-subtitle">Simulated IP blocking — no actual network changes are made</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="warning-banner">
+                            <span class="warn-icon">⚠️</span>
+                            <span><strong>Simulation Only</strong> — All IP blocking shown here is simulated for demonstration. No firewall rules or network modifications are made.</span>
+                        </div>
+                        <div id="blockedList"></div>
+                        <div id="blockedEmpty" class="empty-state">
+                            <div class="empty-state-icon">🚫</div>
+                            <div class="empty-state-text">No IPs blocked</div>
+                            <div class="empty-state-hint">Block suspicious IPs from the analysis results</div>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /page-container -->
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

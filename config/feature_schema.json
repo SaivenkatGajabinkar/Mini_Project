@@ -1,0 +1,31 @@
+{
+  "features": [
+    {"name": "Flow Duration", "dataset_column": " Flow Duration", "description": "Duration of the flow in microseconds", "dtype": "float64", "status": "B"},
+    {"name": "Total Fwd Packets", "dataset_column": " Total Fwd Packets", "description": "Total number of packets in the forward direction", "dtype": "float64", "status": "B"},
+    {"name": "Total Backward Packets", "dataset_column": " Total Backward Packets", "description": "Total number of packets in the backward direction", "dtype": "float64", "status": "B"},
+    {"name": "Total Length of Fwd Packets", "dataset_column": "Total Length of Fwd Packets", "description": "Total payload size of forward packets", "dtype": "float64", "status": "B"},
+    {"name": "Total Length of Bwd Packets", "dataset_column": " Total Length of Bwd Packets", "description": "Total payload size of backward packets", "dtype": "float64", "status": "B"},
+    {"name": "Fwd Packet Length Max", "dataset_column": " Fwd Packet Length Max", "description": "Maximum size of forward packet payloads", "dtype": "float64", "status": "B"},
+    {"name": "Fwd Packet Length Mean", "dataset_column": " Fwd Packet Length Mean", "description": "Mean size of forward packet payloads", "dtype": "float64", "status": "B"},
+    {"name": "Bwd Packet Length Max", "dataset_column": "Bwd Packet Length Max", "description": "Maximum size of backward packet payloads", "dtype": "float64", "status": "B"},
+    {"name": "Bwd Packet Length Mean", "dataset_column": " Bwd Packet Length Mean", "description": "Mean size of backward packet payloads", "dtype": "float64", "status": "B"},
+    {"name": "Flow Bytes/s", "dataset_column": "Flow Bytes/s", "description": "Flow bytes per second rate", "dtype": "float64", "status": "B"},
+    {"name": "Flow Packets/s", "dataset_column": " Flow Packets/s", "description": "Flow packets per second rate", "dtype": "float64", "status": "B"},
+    {"name": "Flow IAT Mean", "dataset_column": " Flow IAT Mean", "description": "Mean inter-arrival time of flow packets", "dtype": "float64", "status": "B"},
+    {"name": "Flow IAT Std", "dataset_column": " Flow IAT Std", "description": "Standard deviation of flow inter-arrival times", "dtype": "float64", "status": "B"},
+    {"name": "Flow IAT Max", "dataset_column": " Flow IAT Max", "description": "Maximum inter-arrival time of flow packets", "dtype": "float64", "status": "B"},
+    {"name": "Fwd IAT Mean", "dataset_column": " Fwd IAT Mean", "description": "Mean inter-arrival time of forward packets", "dtype": "float64", "status": "B"},
+    {"name": "Bwd IAT Mean", "dataset_column": " Bwd IAT Mean", "description": "Mean inter-arrival time of backward packets", "dtype": "float64", "status": "B"},
+    {"name": "SYN Flag Count", "dataset_column": " SYN Flag Count", "description": "Number of packets with SYN flag set", "dtype": "float64", "status": "A"},
+    {"name": "ACK Flag Count", "dataset_column": " ACK Flag Count", "description": "Number of packets with ACK flag set", "dtype": "float64", "status": "A"},
+    {"name": "RST Flag Count", "dataset_column": " RST Flag Count", "description": "Number of packets with RST flag set", "dtype": "float64", "status": "A"},
+    {"name": "PSH Flag Count", "dataset_column": " PSH Flag Count", "description": "Number of packets with PSH flag set", "dtype": "float64", "status": "A"},
+    {"name": "Average Packet Size", "dataset_column": " Average Packet Size", "description": "Average size of all packets in the flow", "dtype": "float64", "status": "B"},
+    {"name": "Init_Win_bytes_forward", "dataset_column": "Init_Win_bytes_forward", "description": "Initial TCP window size in forward direction", "dtype": "float64", "status": "C"}
+  ],
+  "label_column": " Label",
+  "label_mapping": {
+    "BENIGN": "Normal",
+    "_default_": "Attack"
+  }
+}

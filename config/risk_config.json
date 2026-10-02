@@ -1,0 +1,17 @@
+{
+  "risk_weights": {
+    "attack_ratio_weight": 0.5,
+    "mean_probability_weight": 0.3,
+    "volume_factor_weight": 0.2
+  },
+  "volume_factor_denominator": 50,
+  "thresholds": {
+    "low_max": 30,
+    "medium_max": 60
+  },
+  "alert_thresholds": {
+    "alert_ratio": 0.05,
+    "alert_count": 3
+  },
+  "max_upload_size_mb": 50
+}
