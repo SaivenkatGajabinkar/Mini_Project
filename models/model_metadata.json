@@ -27,7 +27,7 @@
   "n_features": 22,
   "scikit_learn_version": "1.7.0",
   "python_version": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
-  "training_date": "2026-10-10T21:09:07.671264",
+  "training_date": "2026-10-10T21:31:21.738723",
   "random_seed": 42,
   "dataset_note": "Full dataset",
   "dataset_files": [
@@ -41,7 +41,7 @@
   "train_attack": 102410,
   "test_normal": 18382,
   "test_attack": 25603,
-  "training_time_seconds": 5.6,
+  "training_time_seconds": 5.7,
   "metrics": {
     "accuracy": 0.9998,
     "precision_attack": 1.0,

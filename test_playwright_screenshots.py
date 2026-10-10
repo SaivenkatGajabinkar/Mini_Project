@@ -2,8 +2,7 @@ import asyncio
 import os
 from playwright.async_api import async_playwright
 
-ARTIFACT_DIR = r"C:\Users\saive\.gemini\antigravity-ide\brain\0c578552-a113-4a71-bceb-457fe25144e9"
-
+ARTIFACT_DIR = r"C:\Users\saive\.gemini\antigravity-ide\brain\b7f0da28-b3ae-41aa-9b9d-4d462cecfff4"
 async def run():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
@@ -20,7 +19,7 @@ async def run():
         await page.wait_for_timeout(1000)
         
         print("Uploading pcap file...")
-        file_path = r"c:\Users\saive\OneDrive\Desktop\Mini_Project\data\demo_capture.pcap"
+        file_path = r"c:\Users\saive\OneDrive\Desktop\Mini_Project\data\attack_sample.pcap"
         await page.locator("#fileInput").set_input_files(file_path)
         await page.wait_for_timeout(500)
         
