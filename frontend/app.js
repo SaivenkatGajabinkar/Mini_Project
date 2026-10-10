@@ -403,10 +403,11 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
 // ============================================================
 function displayResult(result) {
     currentResult = result;
+    const cid = result.capture_id || result.id;
 
     // Header metadata
-    document.getElementById('resultFilename').textContent = result.filename || '';
-    document.getElementById('resultCaptureId').textContent = result.capture_id || '';
+    document.getElementById('resultFilename').textContent = result.filename || result.original_name || '';
+    document.getElementById('resultCaptureId').textContent = cid || '';
     document.getElementById('resultAnalyzedAt').textContent = formatDate(result.analysed_at || result.uploaded_at);
 
     // Status badge
@@ -415,7 +416,7 @@ function displayResult(result) {
     badge.className = `result-status-badge badge ${result.status === 'ATTACK' ? 'badge-attack' : 'badge-normal'}`;
 
     // Download report link
-    document.getElementById('downloadReportBtn').href = `/api/captures/${encodeURIComponent(result.capture_id)}/report`;
+    document.getElementById('downloadReportBtn').href = `/api/captures/${encodeURIComponent(cid)}/report`;
 
     // Risk meter animation
     updateRiskMeter(result.risk_score, result.risk_level);
@@ -428,8 +429,8 @@ function displayResult(result) {
 
     // Render sub-components
     renderProtocolChart(result.protocol_breakdown || {});
-    renderSuspiciousIps(result.suspicious_ips || [], result.capture_id);
-    renderSuspiciousFlows(result.top_suspicious_flows || [], result.capture_id);
+    renderSuspiciousIps(result.suspicious_ips || [], cid);
+    renderSuspiciousFlows(result.top_suspicious_flows || [], cid);
 }
 
 function updateRiskMeter(score, level) {

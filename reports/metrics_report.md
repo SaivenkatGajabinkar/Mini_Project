@@ -1,6 +1,6 @@
 # Model Evaluation Metrics
 
-**Date**: 2026-10-02T16:05:28.126407
+**Date**: 2026-10-10T21:09:07.682348
 
 **Dataset**: Full dataset
 
@@ -68,4 +68,4 @@
 - **class_weight**: balanced
 - **random_state**: 42
 - **Preprocessing**: SimpleImputer(strategy=median)
-- **Training time**: 6.9s
+- **Training time**: 5.6s
