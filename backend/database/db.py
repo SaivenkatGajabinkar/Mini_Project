@@ -21,8 +21,6 @@ All SQL queries use parameterised statements (?) to prevent SQL injection.
 """
 
 import sqlite3
-import time
-import threading
 from pathlib import Path
 from datetime import datetime
 from typing import Optional

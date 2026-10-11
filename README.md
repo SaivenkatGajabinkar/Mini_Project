@@ -128,7 +128,7 @@ Mini_Project/
 | POST | `/api/analyze` | Upload and analyse a capture |
 | GET | `/api/captures` | List all capture history |
 | GET | `/api/captures/{id}` | Full result for one capture |
-| GET | `/api/captures/{id}/report` | Downloadable HTML report |
+| GET | `/api/captures/{id}/report` | Downloadable PDF security audit report |
 | POST | `/api/block` | Simulate blocking an IP |
 | GET | `/api/blocked` | List simulated blocks |
 | DELETE | `/api/blocked/{id}` | Remove a simulated block |

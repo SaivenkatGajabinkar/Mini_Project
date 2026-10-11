@@ -22,13 +22,12 @@ Start with: uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 
 import json
 import uuid
-import shutil
 from pathlib import Path
 from datetime import datetime
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse, Response
+from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

@@ -3,14 +3,14 @@
  *
  * Handles all dashboard interactions:
  * - File upload (drag & drop or click to browse)
- * - Sending the PCAP file to the backend API for analysis
- * - Displaying results (risk score, suspicious IPs, flow table)
- * - Capture history and detailed result views
- * - Simulated IP blocking (demonstration only)
- * - HTML report download
+ * - Sending the PCAP file to the FastAPI backend (/api/analyze)
+ * - Displaying analysis results (animated risk gauge, protocol distribution, flow telemetry)
+ * - Capture history and single capture drill-down views
+ * - Simulated IP blocking (demonstration of automated defense without network disruption)
+ * - High-fidelity PDF report download (exec-level security audit)
  *
- * All communication is through /api/* endpoints.
- * All user-supplied values are HTML-escaped before DOM insertion (XSS prevention).
+ * All communication is through asynchronous /api/* REST endpoints.
+ * All user-supplied values are HTML-escaped before DOM insertion to prevent XSS.
  */
 
 // ============================================================

@@ -22,8 +22,6 @@ Scapy for packet parsing instead of Java.
 """
 
 import json
-import struct
-import tempfile
 from pathlib import Path
 from collections import defaultdict
 from typing import Optional

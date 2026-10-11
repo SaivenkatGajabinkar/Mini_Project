@@ -21,7 +21,6 @@ The model is loaded ONCE on first use and cached in memory for speed.
 
 import json
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -123,7 +122,8 @@ def predict(features_df: pd.DataFrame) -> pd.DataFrame:
     pipeline, metadata = load_pipeline()
     feature_names = load_feature_schema()
 
-    # Verify that all 22 required feature columns exist
+    # Verify that all 22 required feature columns exist.
+    # The model expects the exact same 22 features used during offline training.
     missing_features = [f for f in feature_names if f not in features_df.columns]
     if missing_features:
         raise ValueError(
@@ -131,15 +131,19 @@ def predict(features_df: pd.DataFrame) -> pd.DataFrame:
             f"Expected columns: {feature_names}"
         )
 
-    # Extract only the 22 model features in the correct order
-    # (metadata columns like _src_ip are NOT passed to the model)
+    # Extract only the 22 model features in the exact expected column order.
+    # Note: Network metadata columns (like _src_ip, _dst_ip) are kept separate
+    # and are not fed directly into the machine learning model.
     X = features_df[feature_names].values
 
-    # Run the pipeline: Imputer fills NaN → Random Forest predicts
+    # Step 1: The SimpleImputer inside the pipeline replaces any NaN values with column medians.
+    # Step 2: The RandomForestClassifier runs the input through 100 decision trees.
+    # Each tree casts a vote, and majority vote determines 0 (Normal) or 1 (Attack).
     predictions = pipeline.predict(X)
 
-    # Get probability estimates from the Random Forest
-    # predict_proba returns [[prob_normal, prob_attack], ...] for each flow
+    # Calculate model confidence (attack probability):
+    # predict_proba returns [P(Normal), P(Attack)] for each network flow.
+    # P(Attack) represents the exact fraction of the 100 trees that voted "Attack".
     probabilities = pipeline.predict_proba(X)
 
     # ── OVERRIDE FOR PPT DEMONSTRATION ──
@@ -152,11 +156,11 @@ def predict(features_df: pd.DataFrame) -> pd.DataFrame:
             probabilities[danger_mask, 0] = 0.01
     # ────────────────────────────────────
 
-    # Build result DataFrame with predictions added
+    # Construct the output DataFrame by attaching the prediction results
     result = features_df.copy()
     result["prediction"] = predictions
     result["label"] = np.where(predictions == 1, "Attack", "Normal")
-    # Attack probability is column index 1 (class 1 = Attack)
+    # Attack probability is stored in column index 1 (class 1 = Attack)
     result["attack_probability"] = probabilities[:, 1]
 
     return result

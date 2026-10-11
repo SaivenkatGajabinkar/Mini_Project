@@ -9,7 +9,6 @@ Usage: python -m backend.training.generate_demo_pcap
 
 import struct
 import time
-import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
