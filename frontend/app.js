@@ -402,12 +402,13 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
 // Result Display
 // ============================================================
 function displayResult(result) {
+    if (!result) return;
     currentResult = result;
     const cid = result.capture_id || result.id;
 
     // Header metadata
     document.getElementById('resultFilename').textContent = result.filename || result.original_name || '';
-    document.getElementById('resultCaptureId').textContent = cid || '';
+    document.getElementById('resultCaptureId').textContent = (cid && cid !== 'undefined') ? cid : '';
     document.getElementById('resultAnalyzedAt').textContent = formatDate(result.analysed_at || result.uploaded_at);
 
     // Status badge
@@ -416,7 +417,16 @@ function displayResult(result) {
     badge.className = `result-status-badge badge ${result.status === 'ATTACK' ? 'badge-attack' : 'badge-normal'}`;
 
     // Download report link
-    document.getElementById('downloadReportBtn').href = `/api/captures/${encodeURIComponent(cid)}/report`;
+    const downloadBtn = document.getElementById('downloadReportBtn');
+    if (downloadBtn) {
+        if (cid && cid !== 'undefined') {
+            downloadBtn.dataset.cid = cid;
+            downloadBtn.href = `/api/captures/${encodeURIComponent(cid)}/report?format=pdf`;
+        } else {
+            downloadBtn.removeAttribute('data-cid');
+            downloadBtn.href = '#';
+        }
+    }
 
     // Risk meter animation
     updateRiskMeter(result.risk_score, result.risk_level);
@@ -706,8 +716,73 @@ function formatFileSize(bytes) {
 }
 
 // ============================================================
+// PDF Report Download
+// ============================================================
+async function downloadReportPdf(cid, filename) {
+    if (!cid || cid === 'undefined') {
+        showToast('No Capture Selected', 'Please upload or select a network capture first.', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('downloadReportBtn');
+    const originalHtml = btn ? btn.innerHTML : '📄 Download Report (PDF)';
+
+    try {
+        if (btn) {
+            btn.innerHTML = '⏳ Generating PDF...';
+            btn.style.pointerEvents = 'none';
+        }
+        showToast('Preparing PDF', 'Generating security audit report...', 'info', 2500);
+
+        const res = await fetch(`/api/captures/${encodeURIComponent(cid)}/report?format=pdf&download=true`);
+        if (!res.ok) {
+            let errorMsg = `Server error (${res.status})`;
+            try {
+                const errData = await res.json();
+                if (errData.detail) errorMsg = errData.detail;
+            } catch (_) {}
+            throw new Error(errorMsg);
+        }
+
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+
+        const cleanName = (filename || 'capture').replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+        a.download = `CyberShield_Report_${cleanName}_${cid.slice(0, 8)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+        showToast('Download Ready', 'PDF report downloaded successfully.', 'success');
+    } catch (err) {
+        console.error('Report download error:', err);
+        showToast('Download Error', err.message || 'Failed to download report', 'error');
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.style.pointerEvents = 'auto';
+        }
+    }
+}
+
+// ============================================================
 // Initialization
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Download report button click handler
+    const downloadBtn = document.getElementById('downloadReportBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const cid = currentResult?.capture_id || currentResult?.id || downloadBtn.dataset.cid || document.getElementById('resultCaptureId').textContent.trim();
+            const fname = currentResult?.filename || currentResult?.original_name || document.getElementById('resultFilename').textContent.trim();
+            downloadReportPdf(cid, fname);
+        });
+    }
+
     navigateTo('overview');
 });

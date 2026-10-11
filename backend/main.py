@@ -28,7 +28,7 @@ from datetime import datetime
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -246,8 +246,10 @@ async def analyze_capture(file: UploadFile = File(...)):
         db.store_capture(capture_id, file.filename, result, model_version)
 
         return {
+            "id": capture_id,
             "capture_id": capture_id,
             "filename": file.filename,
+            "original_name": file.filename,
             "status": result["status"],
             "risk_level": result["risk_level"],
             "risk_score": result["risk_score"],
@@ -290,14 +292,52 @@ async def get_capture(capture_id: str):
 
 
 @app.get("/api/captures/{capture_id}/report")
-async def get_capture_report(capture_id: str):
-    """Generate and return an HTML report for a capture."""
+@app.get("/api/captures/{capture_id}/report.pdf")
+@app.get("/api/captures/{capture_id}/report/pdf")
+async def get_capture_report(
+    capture_id: str,
+    format: str = Query("pdf", description="Report format: 'pdf' (default) or 'html'"),
+    download: bool = Query(True, description="Force file download attachment header"),
+):
+    """
+    Generate and return a PDF (or HTML) report for a capture.
+    Defaults to PDF format containing complete threat intelligence.
+    """
+    if not capture_id or capture_id.strip() in ("undefined", "null", ""):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid capture ID. Please select or analyze a PCAP file first.",
+        )
+
     db = _get_db()
     result = db.get_capture(capture_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Capture not found")
 
-    # Generate simple HTML report
+    # If PDF format requested (default)
+    if format.lower() == "pdf":
+        from backend.reports.pdf_generator import generate_pdf_report
+
+        pdf_bytes = generate_pdf_report(result)
+        orig_name = result.get("original_name") or result.get("filename") or "capture"
+        clean_name = Path(orig_name).stem
+        safe_filename = f"CyberShield_Report_{clean_name}_{capture_id[:8]}.pdf"
+        disposition = (
+            f'attachment; filename="{safe_filename}"'
+            if download
+            else f'inline; filename="{safe_filename}"'
+        )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": disposition,
+                "Content-Type": "application/pdf",
+            },
+        )
+
+    # Fallback to HTML report when format=html
     suspicious_flows_html = ""
     for flow in result.get("top_suspicious_flows", []):
         suspicious_flows_html += f"""

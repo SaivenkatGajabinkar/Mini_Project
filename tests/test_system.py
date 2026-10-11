@@ -271,6 +271,54 @@ def test_feature_schema_consistency():
     print("PASS: Feature schema is consistent across modules")
 
 
+def test_pdf_report_generation():
+    """Test generating a PDF report for a capture."""
+    from backend.reports.pdf_generator import generate_pdf_report
+    from backend.database.db import get_capture
+
+    capture = get_capture("test-capture-001")
+    if capture is None:
+        from backend.database.db import store_capture
+        store_capture("test-capture-001", "test_file.pcapng", {
+            "status": "ATTACK",
+            "risk_level": "HIGH",
+            "risk_score": 85.0,
+            "total_flows": 10,
+            "attack_flows": 8,
+            "normal_flows": 2,
+            "attack_ratio": 0.8,
+            "mean_attack_probability": 0.95,
+            "suspicious_ips": [{"ip": "192.168.1.100", "attack_flows": 8}],
+            "top_suspicious_flows": [],
+            "protocol_breakdown": {"TCP": 8, "UDP": 2},
+        }, "v1.0")
+        capture = get_capture("test-capture-001")
+
+    pdf_bytes = generate_pdf_report(capture)
+    assert pdf_bytes is not None, "PDF bytes should not be None"
+    assert len(pdf_bytes) > 1000, f"PDF too small: {len(pdf_bytes)} bytes"
+    assert pdf_bytes.startswith(b"%PDF"), "Output should be a valid PDF format"
+    print("PASS: PDF report generation creates valid PDF bytes with full information")
+
+
+def test_invalid_capture_report():
+    """Test that requesting a report with invalid ID returns 400 error."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    client = TestClient(app)
+    res = client.get("/api/captures/undefined/report")
+    assert res.status_code == 400, f"Expected 400, got {res.status_code}"
+    assert "Invalid capture ID" in res.json()["detail"]
+
+    # Also test valid PDF endpoint
+    res_valid = client.get("/api/captures/test-capture-001/report")
+    assert res_valid.status_code == 200, f"Expected 200, got {res_valid.status_code}"
+    assert res_valid.headers["content-type"] == "application/pdf"
+    assert res_valid.content.startswith(b"%PDF")
+    print("PASS: Report endpoint properly handles undefined ID and returns PDF for valid ID")
+
+
 def run_all_tests():
     """Run all tests and report results."""
     tests = [
@@ -284,6 +332,8 @@ def run_all_tests():
         test_simulated_block,
         test_pcap_validation,
         test_feature_schema_consistency,
+        test_pdf_report_generation,
+        test_invalid_capture_report,
     ]
 
     print("=" * 60)

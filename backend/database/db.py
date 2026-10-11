@@ -222,6 +222,9 @@ def get_capture(capture_id: str) -> Optional[dict]:
         ).fetchall()
 
         result["suspicious_ips"] = [dict(r) for r in ip_rows]
+        result["capture_id"] = capture_id
+        result["id"] = capture_id
+        result["filename"] = result.get("original_name", "")
 
         return result
     finally:
